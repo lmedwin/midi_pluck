@@ -56,6 +56,7 @@ The constraints file is the authority:
 
 | Path | What it is |
 |------|------------|
+| [`docs/design_overview.md`](docs/design_overview.md) | Detailed design notes: scanner, velocity, MIDI, synth, debugging, and project history |
 | `midi_pluck.xpr` | Vivado project |
 | `midi_pluck.srcs/sources_1/imports/Downloads/nollama_top.v` | Top level: matrix scanner, velocity, MIDI FIFO and UART, button and LEDs |
 | `midi_pluck.srcs/sources_1/new/synth_engine.v` | 25-voice synthesizer, ADSR, pluck, sigma-delta output |
