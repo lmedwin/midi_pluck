@@ -16,3 +16,4 @@
 *.bin
 *.bit
 __pycache__/
+sim_run/
