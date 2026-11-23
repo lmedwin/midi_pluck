@@ -61,7 +61,7 @@ Tips:
 
 ## Architecture
 
-&#91;embedded content: signal flow from keybed to synth\]
+![Signal flow from the keybed to the PC and the on-board synth](images/signal_flow.png)
 
 The scanner drives one column line at a time, and the key state machines read the rows back. From there the notes take two paths. Finished note events pass through the pending flags and FIFO to the UART, so several keys can change while the slower serial link is busy, and midi\_synth.py plays them on the PC. At the same time, each key's gate and velocity drive one voice of the on-board synth, whose 1-bit audio leaves on JA1 for an RC filter and speaker. The ILA is for debugging only.
 
@@ -139,7 +139,7 @@ A row gets the whole phase to settle, because it is sampled on the phase's last 
 
 Each key has its own state, a 12-bit `key_timer`, an 8-bit `deb_timer` and a stored velocity. The timer counts 100 us ticks while the key is in `S_DOWN`, from the top contact closing to the bottom contact closing. The 150-tick debounce in `S_BOTTOM_DEB` holds the key for 15 ms after Note On.
 
-&#91;embedded content: per-key state machine · 5 states\]
+![Per-key state machine, 5 states](images/key_state_machine.png)
 
 ### Velocity
 
@@ -248,7 +248,9 @@ The envelope is exponential, like an analog one. Each sample, the level moves (t
 
 The overshooting targets let attack and release finish in a fixed time. A key pressed again during release restarts its attack from the current level, so it doesn't click. The settings are module inputs, so MIDI control messages from the PC could set them later without a rebuild.
 
-&#91;embedded content: simulated with the same integer arithmetic as synth\_engine.v and the ADSR settings in nollama\_top.v · 4 velocities, key held 1 s\]
+![Envelope at 4 velocities, key held 1 s](images/adsr_velocity.png)
+
+*Simulated with the same integer arithmetic as synth\_engine.v and the ADSR settings in nollama\_top.v.*
 
 The envelope has the same shape at every velocity; velocity only scales its height, through the (velocity + 1) / 128 gain. Because the sustain level is a fixed 60 % of each note's own peak, a soft note stays soft for as long as the key is held. This applies to the on-board synth only: FluidSynth on the PC uses the soundfont's own envelopes.
 
