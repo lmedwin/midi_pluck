@@ -6,7 +6,7 @@ Nov 13, 2026 · @Larry Medwin and Claude
 
 This design turns a 25-key Roland K-25M keybed into a MIDI source and a stand-alone synthesizer, running on a Digilent Cmod A7-35T (xc7a35tcpg236-1). It scans the key matrix, measures how fast each key is struck, and sends Note On and Note Off messages over the board's USB-UART. On the PC, `midi_synth.py` plays those messages through FluidSynth. The FPGA can also play the notes itself: `synth_engine.v` sends audio out on Pmod pin JA1 to an RC filter or a Pmod AMP2.
 
-The design is two Verilog modules, `nollama_top.v` and `synth_engine.v`, and one constraints file, `nollama_top.xdc`, built in Vivado 2025.2. All 25 keys play through the PC synth. The board clock turned out to be 100 MHz, and the design now uses it. The on-board synth passes simulation but hasn't been heard on the board yet.
+The design is two Verilog modules, `nollama_top.v` and `synth_engine.v`, and one constraints file, `nollama_top.xdc`, built in Vivado 2025.2. All 25 keys play through the PC synth. The board clock turned out to be 100 MHz, and the design now uses it. The on-board synth runs on the board: an oscilloscope on the Pmod AMP2's audio jack shows all four waveforms.
 
 | Item | Value |
 | --- | --- |
@@ -57,13 +57,13 @@ Tips:
 - **First time on a new PC:** `midi_synth.py` needs FluidSynth and a General MIDI soundfont: `sudo apt install fluidsynth fluid-soundfont-gm`.
 - **Other sounds:** `--program N` picks a General MIDI instrument; `--velocity N` forces a fixed loudness.
 - **Reset:** BTN0 resets the scanner and synth without reprogramming.
-- **On-board sound:** BTN1 steps the on-board synth through saw, square, triangle and pluck (a plucked string); after a reset, three presses select pluck. You only hear it with an RC filter and an amplified speaker on JA1 (see Audio output). Until that is built, an ILA capture of `dbg_synth_sample` can be saved as CSV and turned into a WAV file.
+- **On-board sound:** BTN1 steps the on-board synth through saw, square, triangle and pluck (a plucked string); after a reset, three presses select pluck. It comes out of the audio jack on the Pmod AMP2 in header JA (see Audio output). An ILA capture of `dbg_synth_sample` can be saved as CSV and turned into a WAV file.
 
 ## Architecture
 
 ![Signal flow from the keybed to the PC and the on-board synth](images/signal_flow.png)
 
-The scanner drives one column line at a time, and the key state machines read the rows back. From there the notes take two paths. Finished note events pass through the pending flags and FIFO to the UART, so several keys can change while the slower serial link is busy, and midi\_synth.py plays them on the PC. At the same time, each key's gate and velocity drive one voice of the on-board synth, whose 1-bit audio leaves on JA1 for an RC filter and speaker. The ILA is for debugging only.
+The scanner drives one column line at a time, and the key state machines read the rows back. From there the notes take two paths. Finished note events pass through the pending flags and FIFO to the UART, so several keys can change while the slower serial link is busy, and midi\_synth.py plays them on the PC. At the same time, each key's gate and velocity drive one voice of the on-board synth, whose 1-bit audio leaves on JA1 for the Pmod AMP2. The ILA is for debugging only.
 
 ## Hardware setup
 
@@ -94,7 +94,7 @@ The design assumes the keys run in order across the matrix, which gives this lay
 
 ### Audio output
 
-The on-board synth's audio leaves on Pmod pin JA1 and needs a low-pass filter before an amplifier. The planned circuit is a 1 kΩ and 10 nF filter with a cutoff of about 16 kHz, then a DC-blocking capacitor. It hasn't been built yet.
+The on-board synth's audio leaves on Pmod pin JA1 as a 1-bit sigma-delta signal and needs a low-pass filter before an amplifier. On this board a Digilent Pmod AMP2 in the top row of JA does that, and an oscilloscope probe on its audio jack shows all four waveforms. A home-built RC filter also works: a 1 kΩ and 10 nF filter with a cutoff of about 16 kHz, then a DC-blocking capacitor. It hasn't been built.
 
 ```
  JA1 (G17) ──[ 1 kΩ ]──┬──────┤+ 10 µF ├──────► amplifier input (tip and ring)
@@ -112,7 +112,7 @@ The on-board synth's audio leaves on Pmod pin JA1 and needs a low-pass filter be
 
 The output is up to about 1 V RMS, close to a phone's headphone level. Feed it to powered speakers or an amplifier's AUX input; headphones work but are quiet through the 1 kΩ. Never connect a bare speaker. A second identical RC stage after the first lowers any hiss.
 
-A Digilent Pmod AMP2 in the top row of JA is the plug-in alternative, with the filter and amplifier built in. JA2 and JA4 already drive its GAIN (0) and \~SHUTDOWN (1) pins, and are left unconnected with the RC filter.
+A Digilent Pmod AMP2 in the top row of JA is what this board uses, with the filter and amplifier built in. JA2 and JA4 already drive its GAIN (0) and \~SHUTDOWN (1) pins, and are left unconnected with the RC filter.
 
 ## nollama\_top.v
 
@@ -583,7 +583,7 @@ The wiring and clock problems are fixed. What remains is hearing the on-board sy
 
 | Issue | Evidence | Next step |
 | --- | --- | --- |
-| On-board audio hasn't been heard | xsim and an on-board ILA capture confirm pitch and envelope; no filter is on the board yet | Build the RC filter on JA1 and listen |
+| On-board audio hasn't been heard | xsim and an on-board ILA capture confirm pitch and envelope; a scope on the Pmod AMP2's audio jack shows all four waveforms | Listen through headphones or an amplifier on the AMP2's jack |
 | Debug hub frequency may not take effect | The XDC's `C_CLK_INPUT_FREQ_HZ` line still raises Common 17-55, but the ILA works at 100 MHz anyway | Check it in the implemented design, or set it through the debug setup wizard |
 | Pmod AMP2 gain level unconfirmed | `amp_gain` is tied to 0, but which level gives the lower gain wasn't checked | Read the AMP2 manual before using one |
 | The Verilog header comment is out of date | The `cola` and `colb` port comments still list the original pins, not the 2026-11-10 wiring. | Update the comment. |
