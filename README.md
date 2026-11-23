@@ -8,7 +8,7 @@ The FPGA scans the keyboard's velocity-sensing key matrix and does two things wi
 - **Sends MIDI** (Note On/Off with velocity, plus Program Change) at 31,250 baud over
   the Cmod's USB-UART, so a PC can play it through any software synth.
 - **Plays the notes itself** on a 25-voice synthesizer (saw, square, triangle, or a
-  Karplus-Strong plucked string), out through a Pmod AMP2 on header JA.
+  Karplus-Strong plucked string), as 1-bit audio on header pin JA1.
 
 ## Features
 
@@ -17,7 +17,7 @@ The FPGA scans the keyboard's velocity-sensing key matrix and does two things wi
 - Contact debouncing and full polyphony (every key has its own voice, no voice stealing)
 - 25-voice synth at 48.8 kHz with a per-voice exponential ADSR envelope
 - Karplus-Strong pluck mode with velocity-dependent brightness
-- 1-bit sigma-delta audio output to the Pmod AMP2
+- 1-bit sigma-delta audio output on JA1, for an RC low-pass filter or a Pmod AMP2
 - **BTN1** cycles the waveform (saw → square → triangle → pluck) and sends a matching
   MIDI Program Change, so the PC instrument follows the FPGA's sound
 - **BTN0** resets; **LED1** lights while a key is held; **LED2** blinks at 0.5 Hz as a clock check
@@ -33,7 +33,9 @@ The FPGA scans the keyboard's velocity-sensing key matrix and does two things wi
 
 - Digilent Cmod A7-35T (100 MHz clock on L17)
 - Roland K-25M keyboard (4 × 2 column lines, 8 row lines)
-- Digilent Pmod AMP2 on header JA (top row), with headphones or a speaker
+- For the on-board synth: an RC low-pass filter on JA1 (see the
+  [design notes](docs/design_overview.md#audio-output)) or a Digilent Pmod AMP2 in the
+  top row of header JA, then an amplifier, headphones, or an oscilloscope
 - USB cable to a PC for power, programming, and MIDI
 
 ### Pin assignments
@@ -47,7 +49,7 @@ The FPGA scans the keyboard's velocity-sensing key matrix and does two things wi
 | `reset_btn` | A18 | BTN0 |
 | `wave_btn`  | B18 | BTN1 |
 | `activity_led` / `heartbeat_led` | A17 / C16 | LED1 / LED2 |
-| `amp_ain` / `amp_gain` / `amp_shutdown_n` | G17 / G19 / L18 | Pmod AMP2: JA1 / JA2 / JA4 |
+| `amp_ain` / `amp_gain` / `amp_shutdown_n` | G17 / G19 / L18 | JA1 / JA2 / JA4; GAIN and ~SHUTDOWN are only used by a Pmod AMP2 |
 
 The constraints file is the authority:
 `midi_pluck.srcs/constrs_1/imports/Downloads/nollama_top.xdc`.
