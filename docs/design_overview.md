@@ -77,9 +77,11 @@ The contacts share the 8 row lines. To read a key, the FPGA drives one column li
 
 Every key needs two column lines to work: COLA feeds its top contact, and COLB feeds its bottom contact.
 
+The keybed's wiring is documented in the [Roland-K-25M](https://github.com/deanm1278/Roland-K-25M/) project on GitHub (deanm1278), which reverse-engineered the unit because Roland publishes no schematics. It has a schematic (`k-25m.sch`, `K25M.pdf`), the ribbon connector pinout, the key-matrix numbering and an Arduino example (`K-25M.ino`). It confirms the keybed has no active circuitry: just a matrix of switches, two per key.
+
 ### Key map
 
-The design assumes the keys run in order across the matrix, which gives this layout. The six working notes fit it, but the keyboard's own wiring hasn't been confirmed.
+The keys run in order down each column of the matrix, which gives this layout. It matches the key matrix in the Roland-K-25M project on GitHub.
 
 | Row (Cmod pin) | Column 0 | Column 1 | Column 2 | Column 3 |
 | --- | --- | --- | --- | --- |

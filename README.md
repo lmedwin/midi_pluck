@@ -32,7 +32,9 @@ The FPGA scans the keyboard's velocity-sensing key matrix and does two things wi
 ## Hardware
 
 - Digilent Cmod A7-35T (100 MHz clock on L17)
-- Roland K-25M keyboard (4 × 2 column lines, 8 row lines)
+- Roland K-25M keyboard (4 × 2 column lines, 8 row lines). Roland publishes no schematics;
+  the reverse-engineered schematic, connector pinout and key matrix are in
+  [deanm1278/Roland-K-25M](https://github.com/deanm1278/Roland-K-25M/)
 - For the on-board synth: an RC low-pass filter on JA1 (see the
   [design notes](docs/design_overview.md#audio-output)) or a Digilent Pmod AMP2 in the
   top row of header JA, then an amplifier, headphones, or an oscilloscope
